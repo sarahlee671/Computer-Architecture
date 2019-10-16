@@ -11,29 +11,46 @@ class CPU:
     def ram_read(self, MAR): # MAR = Memory Address Register
         return self.ram[MAR]
     
-    def raw_write(self, MAR, MDR): #MDR = Memory Data Register
+    def ram_write(self, MAR, MDR): #MDR = Memory Data Register
         self.ram[MAR] = MDR
 
-    def load(self):
+    def load(self, argv):
         """Load a program into memory."""
 
         address = 0
+        
+        try:
+            # sys.argv[1] == "examples/mult.ls8 (name of the file to load)"
+            with open(sys.argv[1]) as file:
+                # use command line arguments to open a file, read it's contents line by line
+                for line in file:
+                    # ignore everything after #
+                    split_hashes = line.split("#")
+                    # convert binary strings to integer values to store in RAM 
+                    num = split_hashes[0].strip()
+                    # (can use build-in int() function by specifying a number base as the second argument)
+                    self.ram[address] = int(num, 2)
+                    adress += 1
+        except FileNotFoundError:
+            print("File not found!")
+            sys.exit(2)
+
 
         # For now, we've just hardcoded a program:
 
-        program = [
-            # From print8.ls8
-            0b10000010, # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b01000111, # PRN R0
-            0b00000000,
-            0b00000001, # HLT
-        ]
+        # program = [
+        #     # From print8.ls8
+        #     0b10000010, # LDI R0,8
+        #     0b00000000,
+        #     0b00001000,
+        #     0b01000111, # PRN R0
+        #     0b00000000,
+        #     0b00000001, # HLT
+        # ]
 
-        for instruction in program:
-            self.ram[address] = instruction
-            address += 1
+        # for instruction in program:
+        #     self.ram[address] = instruction
+        #     address += 1
 
 
     def alu(self, op, reg_a, reg_b):
@@ -76,16 +93,18 @@ class CPU:
         while running:
             
             IR = self.ram[self.pc]
-            #register number
+            #register
             operand_a = self.ram_read(self.pc + 1)
             #value
             operand_b = self.ram_read(self.pc + 2)
 
             if IR == HLT:
                 running = False
+                self.pc += 1
 
             elif IR == LDI:
                 #set specificed register to a specified value
+                # increment program counter
                 self.reg[operand_a] = operand_b
                 self.pc += 3
                 
