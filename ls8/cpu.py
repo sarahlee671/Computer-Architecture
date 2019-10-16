@@ -49,7 +49,7 @@ class CPU:
         #     self.ram[address] = instruction
         #     address += 1
 
-    program = []
+
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
 
