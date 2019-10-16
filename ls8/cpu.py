@@ -7,6 +7,9 @@ class CPU:
         self.reg = [0] * 8
         self.ram = [0] * 256
         self.pc = 0
+        #R7 is reserved as the SP
+        self.SP = 7
+
 
     def ram_read(self, MAR): # MAR = Memory Address Register
         return self.ram[MAR]
@@ -87,6 +90,8 @@ class CPU:
         PRN = 0b01000111
         HLT = 0b00000001
         MUL = 0b10100010
+        PUSH = 0b01000101
+        POP = 0b01000110
 
         running = True
 
@@ -108,7 +113,6 @@ class CPU:
                 self.reg[operand_a] = operand_b
                 self.pc += 3
                 
-
             elif IR == PRN:
                 #print numberic value stored in the given register
                 print(self.reg[operand_a])
@@ -117,6 +121,20 @@ class CPU:
             elif IR == MUL:
                 self.alu("MUL", operand_a, operand_b)
                 self.pc += 3
+
+            elif IR == PUSH:
+                #Decrement the SP
+                self.reg[self.SP] -= 1
+                #Copy the value in the given register to the address pointed to by SP
+                self.ram[self.reg[self.SP]] = self.reg[operand_a]
+                self.pc += 2
+
+            elif IR == POP:
+                #copy the value from the address pointed to by SP to the given register
+                self.reg[operand_a] = self.ram[self.reg[self.SP]]
+                #Increment SP
+                self.reg[self.SP] += 1
+                self.pc += 2
             else:
                 print(f"Unknown instruction: {IR}")
                 sys.exit(1)
