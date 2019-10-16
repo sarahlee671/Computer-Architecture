@@ -17,12 +17,9 @@ class CPU:
     def load(self, argv):
         """Load a program into memory."""
 
-        address = 0
-        
         try:
-            # sys.argv[1] == "examples/mult.ls8 (name of the file to load)"
-            with open(sys.argv[1]) as file:
-                # use command line arguments to open a file, read it's contents line by line
+            address = 0
+            with open(sys.argv[1]) as file: 
                 for line in file:
                     # ignore everything after #
                     split_hashes = line.split("#")
@@ -30,11 +27,11 @@ class CPU:
                     num = split_hashes[0].strip()
                     # (can use build-in int() function by specifying a number base as the second argument)
                     self.ram[address] = int(num, 2)
-                    adress += 1
-        except FileNotFoundError:
-            print("File not found!")
-            sys.exit(2)
+                    address += 1
 
+        except FileNotFoundError:
+            print(f"{sys.argv[0]}: {sys.argv[1]} not found")
+            sys.exit(2)
 
         # For now, we've just hardcoded a program:
 
@@ -52,13 +49,15 @@ class CPU:
         #     self.ram[address] = instruction
         #     address += 1
 
-
+    program = []
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
 
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
         #elif op == "SUB": etc
+        elif op == "MUL":
+            self.reg[reg_a] *= self.reg[reg_b]
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -87,6 +86,7 @@ class CPU:
         LDI = 0b10000010
         PRN = 0b01000111
         HLT = 0b00000001
+        MUL = 0b10100010
 
         running = True
 
@@ -113,5 +113,14 @@ class CPU:
                 #print numberic value stored in the given register
                 print(self.reg[operand_a])
                 self.pc += 2
+
+            elif IR == MUL:
+                self.alu("MUL", operand_a, operand_b)
+                self.pc += 3
+            else:
+                print(f"Unknown instruction: {IR}")
+                sys.exit(1)
+
+
 
 
